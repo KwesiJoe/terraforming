@@ -3,12 +3,52 @@ resource "aws_s3_bucket" "s3_bucket" {
   bucket = var.buckets[count.index]
 }
 
+
+resource "aws_cloudfront_origin_access_control" "origin_access_control" {
+  name                              = var.origin_access_control_name
+  description                       = "origin access control"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_s3_bucket_policy" "bucket_policy" {
+  count = length(var.buckets)
+  bucket = aws_s3_bucket.s3_bucket[count.index].id
+  depends_on = [ aws_s3_bucket.s3_bucket, aws_cloudfront_origin_access_control.origin_access_control ]
+  policy = <<EOF
+
+  {
+    "Version": "2008-10-17",
+    "Id": "PolicyForCloudFrontPrivateContent",
+    "Statement": [
+        {
+            "Sid": "AllowCloudFrontServicePrincipal",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "cloudfront.amazonaws.com"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "${aws_s3_bucket.s3_bucket[count.index].arn}/*",
+            "Condition": {
+                "StringEquals": {
+                    "AWS:SourceArn": "${aws_cloudfront_distribution.cloudfront_distribution[count.index].arn}"
+                }
+            }
+        }
+    ]
+}
+
+  EOF
+}
+
 resource "aws_cloudfront_distribution" "cloudfront_distribution" {
-  count = 2
-  depends_on = [aws_s3_bucket.s3_bucket]
+  count = length(var.buckets)
+  depends_on = [aws_s3_bucket.s3_bucket, aws_cloudfront_origin_access_control.origin_access_control]
   origin {
-    domain_name = "${aws_s3_bucket.s3_bucket[count.index].bucket_regional_domain_name}"
-    origin_id   = "${aws_s3_bucket.s3_bucket[count.index].id}"
+    domain_name = aws_s3_bucket.s3_bucket[count.index].bucket_regional_domain_name
+    origin_id   = aws_s3_bucket.s3_bucket[count.index].id
+    origin_access_control_id = aws_cloudfront_origin_access_control.origin_access_control.id
     
     s3_origin_config {
       origin_access_identity = ""  # If using an OAI, specify the ID here
