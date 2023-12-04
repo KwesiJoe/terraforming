@@ -1,3 +1,3 @@
-repositories = [ "tuulboxcore", "tuulboxfrontend" ]
-region = "eu-west-3"
-project = "tuulbox"
+repositories = [ "value" ]
+region = "value"
+project = "value"
