@@ -13,3 +13,7 @@ variable "project" {
   description = "project name to be used to tag resources"
 }
 
+variable "clusters" {
+  type = list(string)
+  description = "names of ecs clusters to create"
+}

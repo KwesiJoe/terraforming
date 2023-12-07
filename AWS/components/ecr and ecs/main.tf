@@ -29,3 +29,14 @@ resource "aws_ecr_lifecycle_policy" "policy" {
 
   EOF
 }
+
+resource "aws_ecs_cluster" "clusters" {
+	count = length(var.clusters)
+	name = var.clusters[count.index]
+
+	setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
+}
