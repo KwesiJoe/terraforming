@@ -1,1 +1,0 @@
-# buckets = ["bucket-1", "bucket-2"]
