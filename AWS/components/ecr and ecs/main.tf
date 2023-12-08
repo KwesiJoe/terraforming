@@ -40,3 +40,15 @@ resource "aws_ecs_cluster" "clusters" {
   }
 
 }
+
+resource "aws_ecs_cluster_capacity_providers" "provider"{
+  count = length(var.clusters)
+  cluster_name = aws_ecs_cluster.clusters[count.index].name
+  capacity_providers = ["FARGATE"]
+
+    default_capacity_provider_strategy {
+    base              = 0
+    weight            = 1
+    capacity_provider = "FARGATE"
+  }
+}
