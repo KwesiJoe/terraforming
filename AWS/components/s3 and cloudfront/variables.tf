@@ -1,19 +1,31 @@
 variable "buckets" {
-  type = list(string)
+  type        = list(string)
   description = "names of buckets to create"
 }
 
 variable "region" {
-  type = string
+  type        = string
   description = "aws region"
 }
 
 variable "origin_access_control_name" {
-  type = string
+  type        = string
   description = "origin access control name"
 }
 
 variable "project" {
-  type = string
+  type        = string
   description = "project name to be used to tag resources"
+}
+
+variable "origins" {
+  type = map(object({
+    bucket  = string
+    aliases = list(string)
+    comment = string
+  }))
+}
+
+variable "acm_certificate_arn" {
+  type = string
 }
